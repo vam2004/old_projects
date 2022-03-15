@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<!--Initial declaration: charset & viewport-->
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width,initial-scale=1"/>
+	<!-- Embeed style -->
+		<style>
+			body{
+				background-color: black;
+			}
+			body, html{
+				margin: 0;
+				box-sizing: border-box;
+				width: 100%;
+				height; 100%;
+			}
+			div.svg-show{
+				margin: 0 auto;
+				width: 750px;
+				height: 750px;
+				box-sizing: border-model;
+			}
+			iframe.svg-show{
+				width: 100%;
+				height: 100%;
+				border: none;
+			}
+			div.svg-show-ctn{
+				height: 100vh;
+				display: flex;
+				flex-flow: column nowrap;
+				justify-content: center;
+				align-content: center;
+			}
+		</style>
+		<style>
+			div.pop-up-conteiner{
+				position: absolute;
+				width: 100%;
+				height: 5vh;
+				display: flex;
+				justify-content: start;
+				background-color: #0f3740;
+				bottom: 0;
+				margin: 0 -8px 0 -8px;
+			}
+			div.ftool{
+				width: 15vw;
+				height: 3vh;
+				margin: 1vh 2vw;
+				background-color: #FFFFFF50;
+			}
+			div.pop-up-svg-conteiner{
+				background-color: #FFFFFF50;
+			}
+			div.pop-up-svg-conteiner:hover{
+				background-color: #007766;
+			}
+			div.pop-up-svg{
+				width: 20vw;
+				height: 43vh;
+				background: #0f3740;
+				position: absolute;
+				margin: 0 0 1vh -8px;
+				bottom: 5vh;
+				visibility: hidden;
+				overflow: hidden;
+			}
+			div.input-len{
+				display: flex;
+				justify-content: center;
+			}
+			input.input-col {
+				padding: 0px;
+				block-size: 100%;
+				inline-size: 100%;
+				border: none;
+			}
+			div.input-col {
+				display: flex;
+				justify-content: space-evenly;
+			}
+			div.sigle-input-col{
+				padding: 1px;
+				box-sizing: border-box;
+				overflow: hidden;
+				height: 100%;
+				width: 40px;
+			}
+			div.clear-col{
+				box-sizing: border-box;
+				background-color: white;
+				border: black 3px solid;
+				display: block;
+				height: 100%;
+				width: 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="pop-up-conteiner">
+			<div class="pop-up-svg-conteiner ftool"></div>
+			<div class="input-len ftool"><input class="input-len" type="range" max="750" min="50"/></div>
+			<div class="input-col ftool">
+				<div class="sigle-input-col"><input class="input-col" type="color"/></div>
+				<div class="sigle-input-col "><div class="clear-col"></div></div>
+				<div class="sigle-input-col"><input class="input-col" type="color"/></div>
+			</div>
+			<script>
+				var dfbg;
+				var rawinputs = new Array();
+				var inhandles = new Array();
+				function inithandles(){
+					inhandles[0] = (i)=>{
+						if(i){
+							if(!showSvg){
+								showSvg = document.querySelector("div.svg-show");
+							}
+							const l = i+"px"
+							var sty = showSvg.style
+							sty.width = l;
+							sty.height = l;
+						}
+						
+					}
+					inhandles[1] = (i)=>{
+						if(i){
+							if(!showSvg){
+								showSvg = document.querySelector("div.svg-show");
+							}
+							showSvg.style.backgroundColor = i;
+							dfbg = false;
+						}
+						
+					}
+					inhandles[2] = e=>{
+						if(dfbg){
+							inhandles[1](rawinputs[1][0].value)
+						}
+						else{
+							loaddfbg()
+							dfbg = true;
+						}
+						
+					}
+				}
+				function initin(){
+					rawinputs[0] = document.querySelector('input.input-len');
+					rawinputs[1] = document.querySelectorAll('input.input-col');
+					rawinputs[2] = document.querySelector('div.clear-col');
+					rawinputs[0].addEventListener('input', e=>inhandles[0](e.target.value))
+					rawinputs[1][0].addEventListener('input', e=>inhandles[1](e.target.value))
+					rawinputs[2].addEventListener('click', e=>inhandles[2]())
+				}
+				
+			</script>
+			<script>
+				const svgUrl = "./database/svgs.json";
+				const divQt = 5;
+				var divOps;  
+				var mystored;
+					
+				class dataStore{
+				  data;
+					 pending = [];//thread quere
+				  constructor(){
+				  }
+				  get(sucess, error){
+					this.pending.push({sucess: sucess, error: error});//add a work in the quere
+					if(this.data){//if data is ready?
+					  this.exec();//sync call (imediate)
+					}
+				  }
+				  getSyncLen(){
+					return (this.data && this.data.allSvg && this.data.allSvg.length) || 0;
+				  }
+				  exec(error){
+					while(this.pending.length){
+					  var work = this.pending.pop();//get next thread in quere
+					  if(error){
+						work && work.error && work.error(error);//pass the error to calback exception handle
+					  }
+					  else{
+						work && work.sucess && work.sucess(this.data);//pass the data to callback
+					  }
+					}
+				  }
+				  load(data, error){
+					if(error){
+					  this.exec(error);//throw a error
+					}
+					else{
+					  this.data = data;//store the data
+					  this.exec();//execute the pending function
+					}
+				  }
+				}
+				const myStore = new dataStore();
+				myStore.get(d=>{mystored = d})
+				window.fetch(svgUrl).then(r=>r.json()).then(d=>myStore.load(d)).then(display(0)).catch(e=>console.log(e))
+				function display(b, data){
+					b = b < 0? 0:b;
+					if(!data){
+						myStore.get(d=>display(b, d.allSvg));
+						return;
+					}
+					else{
+						var l0 = data.length
+						var l = b+5;
+						l = l0 > l? l:l0;
+						for(var i = b; i < l; i++){
+							replaceDiv(i-b, data[i])
+						}
+					}
+				}
+				function display2(b, data){
+					b = b < 0? 0:b;
+					if(!data){
+						myStore.get(d=>display2(b, d.allSvg));
+						return;
+					}
+					else{
+						var l0 = data.length
+						var l = b+5;
+						if(l0 < l){
+							l = data.length
+							b = l - 5;
+							b = b > 0? b:0;
+						}
+						for(var i = b; i < l; i++){
+							replaceDiv(i-b, data[i])
+						}
+					}
+				}
+				function replaceDiv(i, d){
+					if(!divOps){
+						divOps = document.querySelectorAll("div.option-svg");
+					}
+					var div = divOps[i];
+					if(div){
+						var e = document.createElement("p")
+						var t = document.createTextNode(d.name);
+						e.appendChild(t);
+						e.className="option-svg-gen"
+						if(div.children.length){
+							var o = div.childNodes[0];
+							div.replaceChild(e, o);
+						}
+						else{
+						div.appendChild(e)
+							}
+						div.URIFileName = d.filename;
+					}
+				}
+				</script>
+		</div>
+		<script>
+			const baseSvgURI = "database/svgs/"
+			var showSvg;
+			function loadSvg(filename){
+				if(!showSvg){
+					showSvg = document.querySelector("div.svg-show");
+					}
+				if(filename){
+					var obj = document.createElement("object");
+					obj.type = "image/svg+xml";
+					obj.data = baseSvgURI + filename;
+					console.log("fetch: "+baseSvgURI + filename)
+					obj.width="100%";
+					obj.height="100%";
+					if(showSvg.children.length){
+						Array.prototype.forEach.call(showSvg.children, n=>n.remove());
+					}
+					showSvg.appendChild(obj);
+				}
+				return;
+			}	
+		</script>	
+		<div class="pop-up-svg">
+			<style>
+				div.option-svg-gen{
+					width: 15vw;
+					height: 3.5vh;
+					margin: 1vh 2vw;
+					
+				}
+				div.option-svg{
+					background-color: #000000;
+				}
+				div.option-svg-more{
+					background-color: #278050;
+				}
+				div.option-svg-less{
+					background-color: #a04450;
+				}
+				p.option-svg-gen{
+					color: #FFFFFF;
+					text-align: center;
+					font-size: 1.25em; 
+				}
+				div.option-svg-gen:hover{
+					opacity: 0.75;
+				}
+			</style>
+			<div class="option-svg-gen option-svg-more"><p class="option-svg-gen">more</p></div>
+			<div class="option-svg-gen option-svg"></div>
+			<div class="option-svg-gen option-svg"></div>
+			<div class="option-svg-gen option-svg"></div>
+			<div class="option-svg-gen option-svg"></div>
+			<div class="option-svg-gen option-svg"></div>
+			<div class="option-svg-gen option-svg-less"><p class="option-svg-gen">less</p></div>
+		</div>
+		<script>
+			var isOpen = false;
+			var tigger = document.querySelector("div.pop-up-svg-conteiner");
+			var popup = document.querySelector("div.pop-up-svg");
+
+			tigger.addEventListener("click", e=>{
+				if(isOpen){
+					popup.style.visibility = "visible"
+				} 
+				else{
+					popup.style.visibility = "hidden"	
+				}
+				isOpen = !isOpen;
+			})
+		</script>
+		<div class="svg-show-ctn"><div class="svg-show"></div>
+		<script>
+		var displayNumber = 0;
+		document.querySelector("div.option-svg-more").addEventListener("click", ()=>{
+			var l = myStore.getSyncLen();
+			if(displayNumber + 5 < l){
+			displayNumber++;
+			}
+			display(displayNumber)
+		})
+		document.querySelector("div.option-svg-less").addEventListener("click", ()=>{
+			displayNumber--;
+			displayNumber = displayNumber < 0? 0: displayNumber;
+			display(displayNumber)
+		})
+		</script>
+		<script>
+			function loadFirstSVG(defined, es){
+				if(!defined && !es){
+					myStore.get(e=>loadFirstSVG(e.defaultSVG, true));
+					return;
+				}
+				else{
+					console.log("definded: ", defined)
+					loadSvg(defined)
+				}
+			}
+			function loaddfbg(def, es){
+				if(!def && !es){
+					myStore.get(e=>loaddfbg(e.defaultBG, true));
+					return;
+				}
+				else{
+					inhandles[1] && inhandles[1](def || "#00000000")
+				}
+			}
+			function loaddflen(def, es){
+				if(!def && !es){
+					myStore.get(e=>loaddflen(e.defaultLEN, true));
+					return;
+				}
+				else{
+					def && inhandles[0] && inhandles[0](def)
+				}
+			}
+			window.onload = function(){
+				loadFirstSVG();
+				inithandles();
+				initin();
+				loaddfbg();
+				loaddflen();
+				divOps = divOps || document.querySelectorAll("div.option-svg");
+				Array.prototype.forEach.call(divOps, a=>{
+						a.addEventListener("click", (e)=>{
+						var uri = e.target.parentNode.URIFileName;
+						uri && loadSvg(uri);
+					})
+				})	
+			}
+		</script>
+		<!--<object type="image/svg+xml"
+				data="test/search.svg"
+				width="100%"
+				height="100%"></object>-->
+		
+		<!-- emulate clicks
+		<script>
+		const event0 = new MouseEvent('click', {
+				view: window,
+				bubbles: true,
+				cancelable: true
+			});
+		function emclick(e){
+			e.dispatchEvent(event0)
+		}
+		</script>
+		-->
+	</body>
+</html>
+

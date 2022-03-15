@@ -1,0 +1,39 @@
+{
+	"allSvg":[
+		{
+			"name":"search", 
+			"filename":"new/search.svg"
+		},
+		{
+			"name":"home", 
+			"filename":"new/home.svg"
+		},
+		{
+			"name":"more", 
+			"filename":"new/more.svg"
+		},
+		{
+			"name":"info", 
+			"filename":"new/info.svg"
+		},
+		{
+			"name":"expand",
+			"filename":"new/expand.svg"
+		},
+		{
+			"name":"share",
+			"filename":"new/share.svg"
+		},
+		{
+			"name":"play",
+			"filename":"new/play.svg"
+		},
+		{
+			"name":"schedule",
+			"filename":"new/schedule.svg"
+		}
+	],
+	"defaultSVG": "new/schedule.svg",
+	"defaultBG": "#506070",
+	"defaultLEN": "700"
+}
