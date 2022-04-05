@@ -103,30 +103,21 @@ class interface(suduko):
     def parse_column(self, src: int) -> Iterator[str]:
         return self.parse_iter(idxs(src).column())
     def list_all(self):
-##        cache = list(self.parse_all())
-##        for x in range(0, 9):
-##            if x and not x % 3:
-##                print("")
-##            print("|", end="")
-##            for y in range(0, 3):
-##                base = 9 * x + 3 * y
-##                tmp = cache[base:(base+3)]
-##                print("{:>2} {:>2} {:>2} ".format(tmp[0], tmp[1], tmp[2]), end="|")
-##            print("")
-        
         print(self.sep_grid_b)
         for x in fmt_unit.col(self.all_row(), sep=self.sep_grid_i):
             print(x)
         print(self.sep_grid_a)
     def all_row(self):
         for x in range(0, 9):
-            tmp = self.enc_row()
+            tmp = self.enc_row(x)
             if tmp is not None:
                 yield tmp
-    def list_row(self):
-        pass
-    def enc_row(self) -> Optional[str]:
-        tmp = fmt_unit.thr(self.parse_all())
+    def list_row(self, src: int):
+        tmp = self.enc_row(x)
+        if tmp is not None:
+            print(tmp)
+    def enc_row(self, src: int) -> Optional[str]:
+        tmp = fmt_unit.thr(self.parse_row(src))
         lsi = safe_next(fmt_unit.thr(fmt_unit.sep(tmp, nth=3)))
         if lsi is not None:
             return "".join(list(lsi))

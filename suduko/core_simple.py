@@ -6,6 +6,10 @@ def has_in_iter(src: Iterator[Any], data: Any) -> bool:
             return True
     return False
 
+class rawbuffer_err(Exception):
+    def __init__(self, msg):
+          super().__init__(msg)
+
 class out_of_bounds(Exception):
       def __init__(self):
           super().__init__("Out of Bounds")
@@ -138,3 +142,7 @@ class suduko:
         return cache
     def get_buffer(self):
         return self.buffer
+    def set_buffer(self, src: List[int]):
+        if len(src) < 81:
+            raise rawbuffer_err("Low Buffer Size")
+        self.buffer = src

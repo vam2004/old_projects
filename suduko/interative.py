@@ -6,9 +6,12 @@ class game(interface):
     def __init__(self,*,replace_void: str = "x"):
         super().__init__(replace_void=replace_void)
         self.auto_list = False
+        self.auto_play = False
     def set_auto_list(self, flag: bool):
         self.auto_list = flag
     def ask_action(self) -> bool:
+        if self.auto_play:
+            return self.ask_pos()
         tmp = input("now?: ").lower().split()
         if len(tmp) <= 0:
             return self.ask_pos()
@@ -30,6 +33,10 @@ class game(interface):
                 self.auto_list = True
             else:
                 self.auto_list = False
+            return True
+        if tmp[0] == "deep-in":
+            self.auto_play = True
+            return True
         return self.ask_pos()
     def ask_pos(self) -> bool:
         raw = input("pos: ").lower()
@@ -82,5 +89,10 @@ def main():
     tmp = game(replace_void="x")
     while tmp.ask_action():
         pass
-
-main()
+try:
+    main()
+except KeyboardInterrupt:
+    print("\nExited!")
+except Exception as E:
+    # raise E
+    print("Critical Error!")
