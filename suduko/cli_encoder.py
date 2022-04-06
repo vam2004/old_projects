@@ -103,10 +103,15 @@ class interface(suduko):
     def parse_column(self, src: int) -> Iterator[str]:
         return self.parse_iter(idxs(src).column())
     def list_all(self):
-        print(self.sep_grid_b)
-        for x in fmt_unit.col(self.all_row(), sep=self.sep_grid_i):
+        for x in self.enc_all(True):
             print(x)
-        print(self.sep_grid_a)
+    def enc_all(self, flag: bool = True) -> Iterator[str]:
+        if flag:
+            yield self.sep_grid_b
+        for x in fmt_unit.col(self.all_row(), sep=self.sep_grid_i):
+            yield x
+        if flag:
+            yield self.sep_grid_a
     def all_row(self):
         for x in range(0, 9):
             tmp = self.enc_row(x)

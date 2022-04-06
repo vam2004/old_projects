@@ -32,6 +32,8 @@ class sanatizer:
             return int(src)
         except ValueError:
             return None
+
+# legacy class
 class parse_idx:
     def get_idx_table(column: int, row: int) -> int:
         return 9 * column + row
@@ -45,7 +47,28 @@ class parse_idx:
         return src // 9
     def idx_to_grid(src: int) -> int:
         return ((src % 9) // 3) + 3 * (src // 27)
-
+    
+class safe_parse_idx(parse_idx):
+    def get_idx_table(column: int, row: int) -> int:
+        sanatizer.sane_pos(column)
+        sanatizer.sane_pos(row)
+        return 9 * column + row
+    def get_idx_grid(grid: int, pos: int) -> int:
+        sanatizer.sane_pos(grid)
+        sanatizer.sane_pos(pos)
+        base = 9 * grid - 6 * (grid % 3)
+        offs = 9 * (pos // 3) + (pos % 3)
+        return base + offs
+    def idx_to_column(src: int) -> int:
+        sanatizer.sane_index(src)
+        return src % 9
+    def idx_to_row(src: int) -> int:
+        sanatizer.sane_index(src)
+        return src // 9
+    def idx_to_grid(src: int) -> int:
+        sanatizer.sane_index(src)
+        return ((src % 9) // 3) + 3 * (src // 27)
+    
 class idxs:
     def __init__(self, pos: int = 0):
         self.set_pos(pos)
@@ -120,7 +143,7 @@ class suduko:
         sanatizer.sane_value(src)
         return has_in_iter(self.iter_grid(grid), src)
     
-    def set(self, idx: int, src: int) -> has_before:
+    def set_one(self, idx: int, src: int) -> has_before:
         sanatizer.sane_cval(src)
         sanatizer.sane_index(src)
         row_e: Optional[int] = None
@@ -146,3 +169,4 @@ class suduko:
         if len(src) < 81:
             raise rawbuffer_err("Low Buffer Size")
         self.buffer = src
+
