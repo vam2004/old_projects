@@ -105,14 +105,19 @@ class has_before:
         self.cache: Optional[pos_err] = None
         if row is not None:
             self.flag = True
-        if column is not None:
+        elif column is not None:
             self.flag = True
-        if grid is not None:
+        elif grid is not None:
             self.flag = True
         if self.flag:
             self.cache = pos_err(column, row, grid)
     def has(self) -> bool:
         return self.flag
+
+class has_before_err(Exception):
+    def __init__(self, tmp: has_before):
+        self.has_before = tmp
+
 class suduko:
     def __init__(self):
         self.buffer: List[int] = [0 for _ in range(0, 81)]
@@ -143,7 +148,7 @@ class suduko:
         sanatizer.sane_value(src)
         return has_in_iter(self.iter_grid(grid), src)
     
-    def set_one(self, idx: int, src: int) -> has_before:
+    def set_one(self, idx: int, src: int, *, auto_check: bool = True) -> has_before:
         sanatizer.sane_cval(src)
         sanatizer.sane_index(src)
         row_e: Optional[int] = None
@@ -152,7 +157,7 @@ class suduko:
         row: int = parse_idx.idx_to_row(idx)
         column: int = parse_idx.idx_to_column(idx)
         grid: int = parse_idx.idx_to_grid(idx)
-        if src:
+        if src and auto_check:
             if self.has_in_row(src, row):
                 row_e = row
             if self.has_in_column(src, column):
