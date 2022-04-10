@@ -33,8 +33,8 @@ You can type either a moviment or a action (prefixed with `do` keyword).
 ## Actions
 These are the actions avaliable:
 - `do generate <option1> <option2>`:
-+ if the `option1` is `--default` or when both options aren't selected, the app choice the default amount, otherwise, it will be the maximum amount of generated cells. It will use all non-nulls cells intead of generating even more (but it have a bug and therefore can change these). The last option indicates the seed, by default the system choice one.
-+ `do clear`:
+  + if the `option1` is `--default` or when both options aren't selected, the app choice the default amount, otherwise, it will be the maximum amount of generated cells. It will use all non-nulls cells intead of generating even more (but it have a bug and therefore can change these). The last option indicates the seed, by default the system choice one.
+  + `do clear`:
 Clear all units (reset the game)
 - `do list-all`:
 Show all units
