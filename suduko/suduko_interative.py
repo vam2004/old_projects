@@ -1,6 +1,8 @@
 from sock_encoder import abstract_game
-def direct_interative_mode(*,allow_unchecked: bool = False) -> abstract_game:
-    tmp = abstract_game(replace_void="x", allow_unchecked = allow_unchecked)
+from core_simple import suduko
+from typing import Optional
+def direct_interative_mode(*,allow_unchecked: bool = False, src: Optional[suduko] = None) -> abstract_game:
+    tmp = abstract_game(src=src,replace_void = "x", column_sep = "|", allow_unchecked = allow_unchecked)
     print("Next: ", end="")  
     try:
         while True:
@@ -12,11 +14,13 @@ def direct_interative_mode(*,allow_unchecked: bool = False) -> abstract_game:
             print("Next: ", end="")
     except KeyboardInterrupt:
         print("\nExited!")
+        return tmp
     except Exception as E:
         raise E
         print("Critical Error!")
-    finally:
         return tmp
+    #finally:
+        #return tmp
 
 if __name__ == '__main__':
     # direct_interative_mode()

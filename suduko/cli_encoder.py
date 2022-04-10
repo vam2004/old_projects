@@ -48,18 +48,18 @@ class fmt_unit:
         for x in chunks(padding="", fill_end=True).create(src, 3):
             tmp = list(x)
             yield "{}  {}  {}".format(tmp[0], tmp[1], tmp[2])
-    def sep(src: Iterator[str],*, fill_first: bool = True, nth: int = 0) -> Iterator[str]:
+    def sep(src: Iterator[str],*, fill_first: bool = True, nth: int = 0, sep: str = "") -> Iterator[str]:
         if fill_first:
             tmp = safe_next(src)
             if tmp is not None:
-                yield "|{} |".format(tmp)
+                yield "{} {} {}".format(sep, tmp, sep)
             nth -= 1
         if nth > 0:
             for tmp in chunks().take(src, nth):
-                yield "{} |".format(tmp)
+                yield "{} {}".format(tmp, sep)
         else:
             for tmp in src:
-                yield "{} |".format(tmp)
+                yield "{} {}".format(tmp, sep)
     
     def col(src: Iterator[str], sep: str = "\n") -> Iterator[str]:
         tmp = 0
@@ -68,13 +68,17 @@ class fmt_unit:
                 yield sep
             tmp += 1
             yield x
+
 class interface(suduko):
-    def __init__(self,*, replace_void: str = ""):
-        super().__init__()
+    def __init__(self,*, replace_void: str = "", column_sep: str = "", sep_row_i: str = ("-" * 33),  from_raw: Optional[List[int]] = None, src: Optional[suduko] = None):
+        super().__init__(from_raw)
+        if src is not None:
+            self.set_buffer(src.get_buffer())
         self.set_replace(replace_void)
-        self.sep_grid_i = ("-" * 32)
+        self.sep_grid_i = sep_row_i
         self.sep_grid_b = self.sep_grid_i
         self.sep_grid_a = self.sep_grid_i
+        self.column_sep = column_sep
     def set_grid_sep(self,*, between: Optional[str] = None,
                      after: Optional[str] = None,
                      before: Optional[str] = None):
@@ -123,7 +127,10 @@ class interface(suduko):
             print(tmp)
     def enc_row(self, src: int) -> Optional[str]:
         tmp = fmt_unit.thr(self.parse_row(src))
-        lsi = safe_next(fmt_unit.thr(fmt_unit.sep(tmp, nth=3)))
+        lsi = safe_next(fmt_unit.thr(fmt_unit.sep(tmp, nth=3, sep=self.column_sep)))
         if lsi is not None:
             return "".join(list(lsi))
         return None
+
+def list_all(x: suduko):
+    interface(src=x, replace_void="_", column_sep="|").list_all()

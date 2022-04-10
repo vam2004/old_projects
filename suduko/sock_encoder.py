@@ -1,6 +1,10 @@
 from cli_encoder import interface
+from core_simple import suduko
 from core_simple import sanatizer, has_before, safe_parse_idx, out_of_bounds, has_before_err
 from typing import Optional, List
+from generate import generate
+from copy import copy
+import random
 clear_void_replace = "x"
 class sock_wrapper:
     def __init__(self, send, read):
@@ -35,12 +39,16 @@ class abstract_game(interface):
         "cr": (safe_parse_idx.get_idx_table, False),
         "rc": (safe_parse_idx.get_idx_table, True)
     }
-    def __init__(self,*,replace_void: str = "x", allow_unchecked: bool = False):
-        super().__init__(replace_void=replace_void)
+    def __init__(self,*,src: Optional[suduko] = None,replace_void: str = "", _sock: Optional[sock_wrapper] = None, column_sep: str = "", allow_unchecked: bool = False):
+        super().__init__(replace_void=replace_void, column_sep=column_sep, src=src)
         self.auto_list = False
-        self._sock = sock_wrapper(print, input)
+        if _sock is None: 
+            self._sock = sock_wrapper(print, input)
+        else:
+            self._sock = _sock
         self.allow_unchecked = allow_unchecked
         self.auto_check = True
+        self.default_amt = 36
     def set_auto_list(self, flag: bool):
         self.auto_list = flag   
     def play(self, pos, val):
@@ -52,19 +60,49 @@ class abstract_game(interface):
     def send_list_all(self):
         for x in self.enc_all(): 
             self._sock.send(x)
+    def gen_over(self, amount: int, seed: int):
+        tmp = generate(seed, src=self.get_buffer())
+        tmp.try_gen(amount)
+        # tmp.rem_dup_all()
+        print(tmp.check_all())
+        self.buffer = copy(tmp.get_buffer())
     def do_action(self, data: List[str]):
         if len(data) < 2:
             raise few_args()
         if data[1] == "auto-list":
-            if len(data) > 3 and data[3] == "false":
+            if len(data) > 2 and data[2] == "false":
                 self.auto_list = False
             else:
                 self.auto_list = True
+        elif data[1] == "generate":
+            seed: Optional[int] = None
+            amt: Optional[int] = self.default_amt
+            # select amount
+            if len(data) > 2 and data[2] != "--default":
+                amt = sanatizer.safe_int(data[2])
+                if amt is None:
+                    raise unknown_arg()
+            # select seed
+            if len(data) > 3:
+                seed = sanatizer.safe_int(data[3])
+                if seed is None:
+                    raise unknown_arg()
+            else:
+                seed = random.randint(2 ** 31, 2 ** 31 - 1 + 2 ** 31)
+            # generate
+            self.gen_over(amt, seed)
         elif data[1] == "list-all":
             self.send_list_all()
+        elif data[1] == "set-replace":
+            if len(data) > 2:
+                self.set_replace(data[2])
+            else:
+                self.set_replace("")
+        elif data[1] == "clear":
+            self.buffer = copy(suduko.clean_buffer)
         elif data[1] == "auto-check":
             if self.allow_unchecked:
-                if len(data) > 3 and data[3] == "false":
+                if len(data) > 2 and data[2] == "false":
                     self.auto_check = False
                 else:
                     self.auto_check = True
