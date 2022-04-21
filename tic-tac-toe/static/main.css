@@ -1,0 +1,58 @@
+body, html {
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0;
+	height: 100%;
+	overflow: hidden;
+}
+body {
+	background-color: #1f6a39;
+	display: grid;
+	grid-template-rows: 1 1 1 1;
+	grid-template-columns: 1 1 1 1;
+}
+canvas.game {
+	grid-column: 2 / 3;
+	grid-row: 2 / 3;
+	background-color: black;
+}
+table.game {
+	width: 380px;
+	height: 390px;
+	overflow: hidden;
+}
+tr.game {
+	width: 390px;
+	height: 120px;
+	overflow: hidden;
+}
+th.game {
+	background-color: #10001070;
+	width: 120px;
+	height: 120px;
+}
+div.game {
+	grid-column: 2 / 3;
+	grid-row: 2 / 3;
+	width: 100%;
+	height: 100%;
+}
+div.game-options {
+	display: flex;
+	justify-content: space-evenly;
+	width: 380px;
+	height: 70px;
+	grid-column: 2 / 3;
+	grid-row: 2 / 3;
+}
+img.game-opt {
+	width: 100%;
+	height: 100%;
+}
+div.game-opt {
+	position: relative;
+	bottom: 10px;
+	background-color: rgb(10, 68, 5);
+	width: 70px;
+	height: 70px;
+}
